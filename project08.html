@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Story Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .story-container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .choices {
+            margin-top: 20px;
+        }
+        .choice-button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-align: left;
+        }
+        .choice-button:hover {
+            background-color: #0056b3;
+        }
+        .progress {
+            margin: 20px 0;
+            font-size: 14px;
+            color: #666;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="story-container">
+        <h1>Interactive Story Game</h1>
+        <p id="story">Welcome to the adventure! Your journey begins here...</p>
+        <div class="choices" id="choices"></div>
+        <div class="progress" id="progress">Progress: Start</div>
+        <div class="buttons">
+            <button onclick="resetGame()">Restart</button>
+        </div>
+    </div>
+
+    <script>
+        const storyData = {
+            start: {
+                text: "You find yourself in a dark forest. Two paths lie ahead.",
+                choices: [
+                    { text: "Take the left path.", next: "leftPath" },
+                    { text: "Take the right path.", next: "rightPath" }
+                ]
+            },
+            leftPath: {
+                text: "You encounter a friendly elf who offers you a magical item.",
+                choices: [
+                    { text: "Accept the item.", next: "acceptItem" },
+                    { text: "Politely decline and move on.", next: "declineItem" }
+                ]
+            },
+            rightPath: {
+                text: "You stumble upon a sleeping dragon.",
+                choices: [
+                    { text: "Try to sneak past it.", next: "sneakPast" },
+                    { text: "Run back to the forest entrance.", next: "start" }
+                ]
+            },
+            acceptItem: {
+                text: "The elf smiles and hands you a glowing crystal. Your adventure continues...",
+                choices: [
+                    { text: "Continue walking.", next: "end" }
+                ]
+            },
+            declineItem: {
+                text: "The elf respects your decision and bids you farewell. Your journey continues...",
+                choices: [
+                    { text: "Continue walking.", next: "end" }
+                ]
+            },
+            sneakPast: {
+                text: "You successfully sneak past the dragon and find a treasure chest.",
+                choices: [
+                    { text: "Open the chest.", next: "end" }
+                ]
+            },
+            end: {
+                text: "Congratulations! You have reached the end of this path. Play again to explore other choices!",
+                choices: []
+            }
+        };
+
+        let currentNode = "start";
+
+        function renderStory() {
+            const story = storyData[currentNode];
+            const storyText = document.getElementById("story");
+            const choicesDiv = document.getElementById("choices");
+            const progressDiv = document.getElementById("progress");
+
+            storyText.textContent = story.text;
+            choicesDiv.innerHTML = "";
+
+            story.choices.forEach(choice => {
+                const button = document.createElement("button");
+                button.textContent = choice.text;
+                button.className = "choice-button";
+                button.onclick = () => {
+                    currentNode = choice.next;
+                    saveProgress();
+                    renderStory();
+                };
+                choicesDiv.appendChild(button);
+            });
+
+            progressDiv.textContent = `Progress: ${currentNode}`;
+        }
+
+        function saveProgress() {
+            localStorage.setItem("storyGameProgress", currentNode);
+        }
+
+        function loadProgress() {
+            const savedNode = localStorage.getItem("storyGameProgress");
+            if (savedNode && storyData[savedNode]) {
+                currentNode = savedNode;
+            }
+        }
+
+        function resetGame() {
+            currentNode = "start";
+            saveProgress();
+            renderStory();
+        }
+
+        // Load saved progress or start fresh
+        loadProgress();
+        renderStory();
+    </script>
+</body>
+</html>

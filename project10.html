@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customizable Keyboard Trainer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+        }
+        #text-display {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 20px auto;
+            max-width: 600px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            border-radius: 5px;
+            word-wrap: break-word;
+        }
+        #input-area {
+            width: 100%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            outline: none;
+            margin-top: 20px;
+        }
+        #controls {
+            margin: 20px 0;
+        }
+        #results {
+            margin-top: 20px;
+            padding: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+        }
+        button, select, input {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        .error {
+            color: red;
+        }
+        .correct {
+            color: green;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customizable Keyboard Trainer</h1>
+    <div id="controls">
+        <label for="difficulty">Difficulty:</label>
+        <select id="difficulty">
+            <option value="easy">Easy (short words)</option>
+            <option value="medium">Medium (sentences)</option>
+            <option value="hard">Hard (special characters)</option>
+        </select>
+        <button id="start-button">Start Training</button>
+    </div>
+    <div id="text-display"></div>
+    <textarea id="input-area" rows="4" disabled placeholder="Type here..."></textarea>
+    <div id="results">
+        <h2>Results</h2>
+        <p id="wpm">Words Per Minute (WPM): </p>
+        <p id="accuracy">Accuracy: </p>
+        <button id="restart-button">Restart</button>
+    </div>
+
+    <script>
+        const textDisplay = document.getElementById("text-display");
+        const inputArea = document.getElementById("input-area");
+        const startButton = document.getElementById("start-button");
+        const restartButton = document.getElementById("restart-button");
+        const difficultySelect = document.getElementById("difficulty");
+        const resultsDiv = document.getElementById("results");
+        const wpmDisplay = document.getElementById("wpm");
+        const accuracyDisplay = document.getElementById("accuracy");
+
+        let targetText = "";
+        let startTime = null;
+        let timer = null;
+
+        const easyWords = ["cat", "dog", "fish", "book", "apple", "sky", "tree"];
+        const mediumSentences = [
+            "The quick brown fox jumps over the lazy dog.",
+            "A journey of a thousand miles begins with a single step.",
+            "Typing is fun and improves your skills."
+        ];
+        const hardText = [
+            "C@mpl3x!t1es & @lgorithms?",
+            "Err0r$ in Typ1ng H@ppen F@$t.",
+            "J@v@Script is powerful but tricky!"
+        ];
+
+        function getRandomText(difficulty) {
+            if (difficulty === "easy") {
+                return easyWords.join(" ");
+            } else if (difficulty === "medium") {
+                return mediumSentences[Math.floor(Math.random() * mediumSentences.length)];
+            } else {
+                return hardText[Math.floor(Math.random() * hardText.length)];
+            }
+        }
+
+        function startTraining() {
+            targetText = getRandomText(difficultySelect.value);
+            textDisplay.textContent = targetText;
+            inputArea.value = "";
+            inputArea.disabled = false;
+            inputArea.focus();
+            startTime = new Date();
+            resultsDiv.style.display = "none";
+
+            inputArea.addEventListener("input", checkInput);
+        }
+
+        function checkInput() {
+            const userInput = inputArea.value;
+            const targetSubstring = targetText.substring(0, userInput.length);
+
+            if (userInput === targetText) {
+                clearInterval(timer);
+                calculateResults();
+                inputArea.disabled = true;
+                inputArea.removeEventListener("input", checkInput);
+            }
+
+            if (userInput === targetSubstring) {
+                textDisplay.innerHTML = targetText.split("")
+                    .map((char, i) => (i < userInput.length ? `<span class="correct">${char}</span>` : char))
+                    .join("");
+            } else {
+                textDisplay.innerHTML = targetText.split("")
+                    .map((char, i) => (i < userInput.length ? `<span class="error">${char}</span>` : char))
+                    .join("");
+            }
+        }
+
+        function calculateResults() {
+            const elapsedTime = (new Date() - startTime) / 1000 / 60; // Time in minutes
+            const wordCount = targetText.split(" ").length;
+            const userInput = inputArea.value;
+            const correctChars = userInput.split("").filter((char, i) => char === targetText[i]).length;
+            const accuracy = Math.floor((correctChars / targetText.length) * 100);
+
+            wpmDisplay.textContent = `Words Per Minute (WPM): ${Math.floor(wordCount / elapsedTime)}`;
+            accuracyDisplay.textContent = `Accuracy: ${accuracy}%`;
+            resultsDiv.style.display = "block";
+        }
+
+        function restartTraining() {
+            inputArea.disabled = true;
+            textDisplay.textContent = "";
+            inputArea.value = "";
+            resultsDiv.style.display = "none";
+        }
+
+        startButton.addEventListener("click", startTraining);
+        restartButton.addEventListener("click", restartTraining);
+    </script>
+</body>
+</html>

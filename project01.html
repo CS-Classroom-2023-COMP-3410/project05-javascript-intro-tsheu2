@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customizable Digital Clock</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .clock {
+            font-size: 2rem;
+            padding: 20px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            background-color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .controls label {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="clock" id="clock">Loading...</div>
+    <div class="controls">
+        <label>
+            <input type="checkbox" id="toggleFormat"> 12-hour Format
+        </label>
+        <label>Font Size: <input type="number" id="fontSize" min="10" max="50" value="20"> px</label>
+        <label>Color: <input type="color" id="colorPicker" value="#000000"></label>
+        <label>Alarm Time: <input type="time" id="alarmTime"></label>
+        <button id="setAlarm">Set Alarm</button>
+    </div>
+    <audio id="alarmSound" src="https://www.soundjay.com/button/beep-07.wav"></audio>
+
+    <script>
+        const clock = document.getElementById('clock');
+        const toggleFormat = document.getElementById('toggleFormat');
+        const fontSizeInput = document.getElementById('fontSize');
+        const colorPicker = document.getElementById('colorPicker');
+        const alarmTimeInput = document.getElementById('alarmTime');
+        const setAlarmButton = document.getElementById('setAlarm');
+        const alarmSound = document.getElementById('alarmSound');
+
+        let is12HourFormat = JSON.parse(localStorage.getItem('is12HourFormat')) || false;
+        let alarmTime = localStorage.getItem('alarmTime') || null;
+
+        toggleFormat.checked = is12HourFormat;
+        toggleFormat.addEventListener('change', () => {
+            is12HourFormat = toggleFormat.checked;
+            localStorage.setItem('is12HourFormat', is12HourFormat);
+        });
+
+        fontSizeInput.addEventListener('input', () => {
+            const fontSize = fontSizeInput.value;
+            clock.style.fontSize = `${fontSize}px`;
+            localStorage.setItem('fontSize', fontSize);
+        });
+
+        colorPicker.addEventListener('input', () => {
+            const color = colorPicker.value;
+            clock.style.color = color;
+            localStorage.setItem('color', color);
+        });
+
+        setAlarmButton.addEventListener('click', () => {
+            alarmTime = alarmTimeInput.value;
+            localStorage.setItem('alarmTime', alarmTime);
+            alert(`Alarm set for ${alarmTime}`);
+        });
+
+        function loadPreferences() {
+            const savedFontSize = localStorage.getItem('fontSize');
+            const savedColor = localStorage.getItem('color');
+
+            if (savedFontSize) {
+                clock.style.fontSize = `${savedFontSize}px`;
+                fontSizeInput.value = savedFontSize;
+            }
+
+            if (savedColor) {
+                clock.style.color = savedColor;
+                colorPicker.value = savedColor;
+            }
+
+            if (alarmTime) {
+                alarmTimeInput.value = alarmTime;
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+
+            if (is12HourFormat) {
+                const amPm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12 || 12;
+                clock.textContent = `${hours}:${minutes}:${seconds} ${amPm}`;
+            } else {
+                clock.textContent = `${hours}:${minutes}:${seconds}`;
+            }
+
+            if (alarmTime && alarmTime === `${String(hours).padStart(2, '0')}:${minutes}`) {
+                alarmSound.play();
+            }
+        }
+
+        loadPreferences();
+        setInterval(updateClock, 1000);
+    </script>
+</body>
+</html>

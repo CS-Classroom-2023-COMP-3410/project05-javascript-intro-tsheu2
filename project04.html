@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Quiz App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            text-align: center;
+            padding: 20px;
+        }
+        .quiz-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .question {
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        .answers {
+            list-style-type: none;
+            padding: 0;
+        }
+        .answers li {
+            margin: 10px 0;
+        }
+        .feedback {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            background-color: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005f99;
+        }
+        .results {
+            margin-top: 20px;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="quiz-container">
+        <div id="quiz"></div>
+        <div id="feedback" class="feedback" style="display: none;"></div>
+        <button id="nextButton">Next</button>
+        <div id="results" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "What is the capital of France?",
+                answers: ["Berlin", "Madrid", "Paris", "Rome"],
+                correctAnswer: 2
+            },
+            {
+                question: "Which planet is known as the Red Planet?",
+                answers: ["Earth", "Mars", "Jupiter", "Venus"],
+                correctAnswer: 1
+            },
+            {
+                question: "Who wrote 'To Kill a Mockingbird'?",
+                answers: ["Harper Lee", "Mark Twain", "Jane Austen", "Ernest Hemingway"],
+                correctAnswer: 0
+            },
+            {
+                question: "What is the largest mammal?",
+                answers: ["Elephant", "Blue Whale", "Giraffe", "Polar Bear"],
+                correctAnswer: 1
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let userAnswers = [];
+
+        const quizContainer = document.getElementById('quiz');
+        const feedbackContainer = document.getElementById('feedback');
+        const nextButton = document.getElementById('nextButton');
+        const resultsContainer = document.getElementById('results');
+
+        function loadQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            quizContainer.innerHTML = `
+                <div class="question">${currentQuestion.question}</div>
+                <ul class="answers">
+                    ${currentQuestion.answers.map((answer, index) => `
+                        <li>
+                            <label>
+                                <input type="radio" name="answer" value="${index}">
+                                ${answer}
+                            </label>
+                        </li>
+                    `).join('')}
+                </ul>
+            `;
+            feedbackContainer.style.display = 'none';
+        }
+
+        function showFeedback(isCorrect) {
+            feedbackContainer.style.display = 'block';
+            feedbackContainer.textContent = isCorrect ? 'Correct!' : 'Incorrect!';
+            feedbackContainer.style.color = isCorrect ? 'green' : 'red';
+        }
+
+        function showResults() {
+            quizContainer.style.display = 'none';
+            nextButton.style.display = 'none';
+
+            const summary = questions.map((q, i) => {
+                const correct = q.correctAnswer === userAnswers[i];
+                return `
+                    <div>
+                        <p>${q.question}</p>
+                        <p>Your answer: <strong>${q.answers[userAnswers[i]] || "No answer"}</strong></p>
+                        <p>Correct answer: <strong>${q.answers[q.correctAnswer]}</strong></p>
+                        <p style="color: ${correct ? 'green' : 'red'};">${correct ? 'Correct!' : 'Incorrect!'}</p>
+                    </div>
+                `;
+            }).join('');
+
+            resultsContainer.innerHTML = `
+                <p>You scored ${score} out of ${questions.length}</p>
+                ${summary}
+            `;
+            resultsContainer.style.display = 'block';
+        }
+
+        nextButton.addEventListener('click', () => {
+            const selectedAnswer = document.querySelector('input[name="answer"]:checked');
+            if (!selectedAnswer) {
+                alert('Please select an answer.');
+                return;
+            }
+
+            const answerValue = parseInt(selectedAnswer.value);
+            userAnswers.push(answerValue);
+
+            const isCorrect = answerValue === questions[currentQuestionIndex].correctAnswer;
+            if (isCorrect) {
+                score++;
+            }
+
+            showFeedback(isCorrect);
+
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
+                setTimeout(() => {
+                    loadQuestion();
+                }, 1000);
+            } else {
+                setTimeout(() => {
+                    showResults();
+                }, 1000);
+            }
+        });
+
+        loadQuestion();
+    </script>
+</body>
+</html>
